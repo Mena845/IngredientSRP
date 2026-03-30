@@ -1,4 +1,69 @@
 package org.example.ingredientsrp.Controller;
 
+import org.example.ingredientsrp.entity.Ingredient;
+import org.example.ingredientsrp.repository.IngredientRepository;
+import org.example.ingredientsrp.repository.StockRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.sql.SQLException;
+import java.util.List;
+
+@RestController
+@RequestMapping("/ingredients")
 public class IngredientController {
+
+    private final IngredientRepository ingredientRepository;
+    private final StockRepository stockRepository;
+
+    public IngredientController(IngredientRepository ingredientRepository,
+                                StockRepository stockRepository) {
+        this.ingredientRepository = ingredientRepository;
+        this.stockRepository = stockRepository;
+    }
+
+    @GetMapping
+    public List<Ingredient> getAll() throws SQLException {
+        return ingredientRepository.findAll(0, 10);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable int id) throws SQLException {
+
+        Ingredient i = ingredientRepository.findById(id);
+
+        if (i == null) {
+            return ResponseEntity.status(404)
+                    .body("Ingredient.id=" + id + " is not found");
+        }
+
+        return ResponseEntity.ok(i);
+    }
+
+    @GetMapping("/{id}/stock")
+    public ResponseEntity<?> getStock(
+            @PathVariable int id,
+            @RequestParam(required = false) String at,
+            @RequestParam(required = false) String unit
+    ) throws SQLException {
+
+        if (at == null || unit == null) {
+            return ResponseEntity.status(400)
+                    .body("Either mandatory query parameter `at` or `unit` is not provided.");
+        }
+
+        Ingredient i = ingredientRepository.findById(id);
+
+        if (i == null) {
+            return ResponseEntity.status(404)
+                    .body("Ingredient.id=" + id + " is not found");
+        }
+
+        StockValue stock = stockRepository.getStockAt(
+                Instant.parse(at),
+                id
+        );
+
+        return ResponseEntity.ok(stock);
+    }
 }
