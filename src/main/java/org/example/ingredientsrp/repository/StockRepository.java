@@ -1,4 +1,51 @@
 package org.example.ingredientsrp.repository;
 
+import org.example.ingredientsrp.dataSource.DataSource;
+import org.springframework.stereotype.Repository;
+
+import java.sql.*;
+import java.time.Instant;
+
+@Repository
 public class StockRepository {
+
+    private final DataSource dataSource;
+
+    public StockRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public StockValue getStockAt(Instant t, Integer ingredientId) throws SQLException {
+
+        String sql = """
+            SELECT unit,
+                   SUM(
+                       CASE 
+                           WHEN type = 'IN' THEN quantity
+                           WHEN type = 'OUT' THEN -quantity
+                       END
+                   ) AS total
+            FROM stock_movement
+            WHERE id_ingredient = ? AND creation_datetime <= ?
+            GROUP BY unit
+        """;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, ingredientId);
+            ps.setTimestamp(2, Timestamp.from(t));
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                StockValue s = new StockValue();
+                s.setQuantity(rs.getDouble("total"));
+                s.setUnit(UniteEnum.valueOf(rs.getString("unit")));
+                return s;
+            }
+
+            return new StockValue(0.0, UniteEnum.PCS);
+        }
+    }
 }
