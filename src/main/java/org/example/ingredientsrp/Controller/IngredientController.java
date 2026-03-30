@@ -1,6 +1,7 @@
 package org.example.ingredientsrp.Controller;
 
 import org.example.ingredientsrp.entity.Ingredient;
+import org.example.ingredientsrp.entity.StockValue;
 import org.example.ingredientsrp.repository.IngredientRepository;
 import org.example.ingredientsrp.repository.StockRepository;
 import org.springframework.http.ResponseEntity;

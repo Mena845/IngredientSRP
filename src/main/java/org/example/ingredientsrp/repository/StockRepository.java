@@ -1,6 +1,8 @@
 package org.example.ingredientsrp.repository;
 
 import org.example.ingredientsrp.dataSource.DataSource;
+import org.example.ingredientsrp.entity.StockValue;
+import org.example.ingredientsrp.entity.UniteEnum;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
