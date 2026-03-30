@@ -1,11 +1,21 @@
 package org.example.ingredientsrp.entity;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.ingredientsrp.entity.Dish;
+
 
 public class Ingredient {
 
     private Integer id;
+    @Setter
     private String name;
     private String category;
+    @Getter
     private double price;
+    private Dish dish;
+    @Getter
+    @Setter
+    private Double requiredQuantity;
 
     public Ingredient() {}
 
@@ -14,6 +24,15 @@ public class Ingredient {
         this.name = name;
         this.category = category;
         this.price = price;
+    }
+
+    public Ingredient(int id, String name, double price, CategoryEnum category, Double requiredQuantity, Dish dish) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.category = String.valueOf(category);
+        this.requiredQuantity = requiredQuantity;
+        this.dish = dish;
     }
 
     public Integer getId() {
@@ -28,10 +47,6 @@ public class Ingredient {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getCategory() {
         return category;
     }
@@ -40,11 +55,8 @@ public class Ingredient {
         this.category = category;
     }
 
-    public double getPrice() {
-        return price;
-    }
-
     public void setPrice(double price) {
         this.price = price;
     }
+
 }
