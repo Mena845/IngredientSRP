@@ -1,8 +1,8 @@
 package org.example.ingredientsrp.Controller;
 
 
-import org.example.entity.Dish;
-import org.example.repository.DishRepository;
+import org.example.ingredientsrp.entity.Dish;
+import org.example.ingredientsrp.repository.DishRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;

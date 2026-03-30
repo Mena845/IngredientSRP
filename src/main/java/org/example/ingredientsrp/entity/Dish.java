@@ -1,6 +1,4 @@
 package org.example.ingredientsrp.entity;
-
-
 import java.util.List;
 
 public class Dish {
