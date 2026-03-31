@@ -43,7 +43,11 @@ public class StockRepository {
             if (rs.next()) {
                 StockValue s = new StockValue();
                 s.setQuantity(rs.getDouble("total"));
-                s.setUnit(UniteEnum.valueOf(rs.getString("unit")));
+
+                // 🔥 CORRECTION ICI
+                String unitStr = rs.getString("unit");
+                s.setUnit(UniteEnum.valueOf(unitStr.toUpperCase()));
+
                 return s;
             }
 
