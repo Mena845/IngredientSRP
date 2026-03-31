@@ -1,119 +1,31 @@
 package org.example.ingredientsrp.Controller;
 
 import org.example.ingredientsrp.entity.Dish;
-import org.example.ingredientsrp.entity.DishTypeEnum;
-import org.example.ingredientsrp.entity.Ingredient;
-import org.example.ingredientsrp.entity.CategoryEnum;
-import org.springframework.stereotype.Repository;
+import org.example.ingredientsrp.repository.DishRepository;
+import org.springframework.web.bind.annotation.*;
 
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
-@Repository
+@RestController
+@RequestMapping("/dishes")
 public class DishController {
 
-    private final DataSource dataSource;
+    private final DishRepository dishRepository;
 
-    public DishController(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public DishController(DishRepository dishRepository) {
+        this.dishRepository = dishRepository;
     }
 
-    // 🔹 Récupérer un plat par id
-    public Dish findById(int id) throws SQLException {
-        String sql = """
-            SELECT d.id AS d_id, d.name AS d_name, d.dish_type,
-                   i.id AS i_id, i.name AS i_name, i.price, i.category, i.required_quantity
-            FROM dish d
-            LEFT JOIN dish_ingredient di ON d.id = di.dish_id
-            LEFT JOIN ingredient i ON i.id = di.ingredient_id
-            WHERE d.id = ?
-        """;
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-
-            Dish dish = null;
-            List<Ingredient> ingredients = new ArrayList<>();
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    if (dish == null) {
-                        dish = new Dish(
-                                rs.getInt("d_id"),
-                                rs.getString("d_name"),
-                                DishTypeEnum.valueOf(rs.getString("dish_type"))
-                        );
-                    }
-
-                    if (rs.getObject("i_id") != null) {
-                        ingredients.add(new Ingredient(
-                                rs.getInt("i_id"),
-                                rs.getString("i_name"),
-                                rs.getDouble("price"),
-                                CategoryEnum.valueOf(rs.getString("category")),
-                                rs.getObject("required_quantity", Double.class),
-                                dish
-                        ));
-                    }
-                }
-            }
-
-            if (dish != null) {
-                dish.setIngredients(ingredients);
-            }
-
-            return dish;
-        }
+    // GET /dishes
+    @GetMapping
+    public List<Dish> getAll() throws SQLException {
+        return dishRepository.findAll();
     }
 
-    // 🔹 Récupérer tous les plats
-    public List<Dish> findAll() throws SQLException {
-        List<Dish> dishes = new ArrayList<>();
-        String sql = "SELECT id FROM dish ORDER BY id";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                Dish dish = findById(id); // réutilise la méthode findById
-                if (dish != null) dishes.add(dish);
-            }
-        }
-
-        return dishes;
-    }
-
-    // 🔹 Mettre à jour les ingrédients d’un plat
-    public void updateIngredients(int dishId, List<Ingredient> ingredients) throws SQLException {
-        try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
-
-            // Supprimer les associations existantes
-            try (PreparedStatement psDelete = conn.prepareStatement(
-                    "DELETE FROM dish_ingredient WHERE dish_id = ?")) {
-                psDelete.setInt(1, dishId);
-                psDelete.executeUpdate();
-            }
-
-            // Insérer les nouvelles associations
-            try (PreparedStatement psInsert = conn.prepareStatement(
-                    "INSERT INTO dish_ingredient(dish_id, ingredient_id) VALUES (?, ?)")) {
-                for (Ingredient i : ingredients) {
-                    psInsert.setInt(1, dishId);
-                    psInsert.setInt(2, i.getId());
-                    psInsert.executeUpdate();
-                }
-            }
-
-            conn.commit();
-        } catch (SQLException e) {
-            throw e;
-        }
+    // GET /dishes/{id}
+    @GetMapping("/{id}")
+    public Dish getById(@PathVariable int id) throws SQLException {
+        return dishRepository.findById(id);
     }
 }

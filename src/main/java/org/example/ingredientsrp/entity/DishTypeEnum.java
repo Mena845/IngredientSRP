@@ -1,4 +1,4 @@
 package org.example.ingredientsrp.entity;
 
-public enum DishTypeEnum { STARTER, MAIN, DESSERT }
+public enum DishTypeEnum { START, MAIN, DESSERT }
 
