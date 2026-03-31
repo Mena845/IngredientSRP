@@ -21,11 +21,9 @@ public class Ingredient {
     @Setter
     private Double requiredQuantity;
 
-    // ✅ Constructeur par défaut obligatoire pour Jackson
     public Ingredient() {
     }
 
-    // Tes autres constructeurs existants
     public Ingredient(int id, String name, CategoryEnum category, double price) {
         this.id = id;
         this.name = name;
@@ -49,7 +47,7 @@ public class Ingredient {
         this.dish = dish;
     }
 
-    // Getters & Setters
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
