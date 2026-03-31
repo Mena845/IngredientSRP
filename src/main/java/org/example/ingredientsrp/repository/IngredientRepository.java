@@ -17,7 +17,7 @@ public class IngredientRepository {
 
     private final DataSource dataSource;
 
-    // Injection automatique du DataSource configuré par Spring Boot
+
     public IngredientRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -75,6 +75,6 @@ public class IngredientRepository {
             }
         }
 
-        return null; // Aucun ingrédient trouvé
+        return null;
     }
 }

@@ -19,13 +19,11 @@ public class DishController {
         this.dishRepository = dishRepository;
     }
 
-    // GET /dishes
     @GetMapping
     public List<Dish> getAll() throws SQLException {
         return dishRepository.findAll();
     }
 
-    // GET /dishes/{id}
     @GetMapping("/{id}")
     public Dish getById(@PathVariable int id) throws SQLException {
         Dish dish = dishRepository.findById(id);
@@ -35,7 +33,6 @@ public class DishController {
         return dish;
     }
 
-    // PUT /dishes/{id}/ingredients
     @PutMapping("/{id}/ingredients")
     public String updateDishIngredients(@PathVariable int id,
                                         @RequestBody List<Ingredient> ingredients) throws SQLException {
@@ -45,5 +42,20 @@ public class DishController {
         }
         dishRepository.updateIngredients(id, ingredients);
         return "Ingredients updated successfully";
+    }
+
+    // Nouveau endpoint GET /dishes/{id}/ingredients?ingredientName={i}&ingredientPriceAround={p}
+    @GetMapping("/{id}/ingredients")
+    public List<Ingredient> getIngredientsFiltered(
+            @PathVariable int id,
+            @RequestParam(required = false) String ingredientName,
+            @RequestParam(required = false) Double ingredientPriceAround
+    ) throws SQLException {
+        Dish dish = dishRepository.findById(id);
+        if (dish == null) {
+            throw new NotFoundException("Dish.id=" + id + " not found");
+        }
+
+        return dishRepository.findIngredientsByDishIdFiltered(id, ingredientName, ingredientPriceAround);
     }
 }

@@ -1,9 +1,6 @@
 package org.example.ingredientsrp.repository;
 
-import org.example.ingredientsrp.entity.Dish;
-import org.example.ingredientsrp.entity.DishTypeEnum;
-import org.example.ingredientsrp.entity.Ingredient;
-import org.example.ingredientsrp.entity.CategoryEnum;
+import org.example.ingredientsrp.entity.*;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -84,19 +81,16 @@ public class DishRepository {
         return dishes;
     }
 
-
     public void updateIngredients(int dishId, List<Ingredient> ingredients) throws SQLException {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
 
-            // Supprimer les associations existantes
             try (PreparedStatement psDelete = conn.prepareStatement(
                     "DELETE FROM dish_ingredient WHERE dish_id = ?")) {
                 psDelete.setInt(1, dishId);
                 psDelete.executeUpdate();
             }
 
-            // Ajouter les nouvelles associations
             try (PreparedStatement psInsert = conn.prepareStatement(
                     "INSERT INTO dish_ingredient(dish_id, ingredient_id) VALUES (?, ?)")) {
                 for (Ingredient i : ingredients) {
@@ -112,5 +106,52 @@ public class DishRepository {
         }
     }
 
+    // Nouvelle méthode pour récupérer les ingrédients filtrés
+    public List<Ingredient> findIngredientsByDishIdFiltered(int dishId, String ingredientName, Double ingredientPriceAround) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+            SELECT i.id, i.name, i.price, i.category, i.required_quantity
+            FROM ingredient i
+            INNER JOIN dish_ingredient di ON i.id = di.ingredient_id
+            WHERE di.dish_id = ?
+        """);
 
+        if (ingredientName != null && !ingredientName.isEmpty()) {
+            sql.append(" AND i.name ILIKE ?");
+        }
+        if (ingredientPriceAround != null) {
+            sql.append(" AND i.price BETWEEN ? AND ?");
+        }
+
+        List<Ingredient> ingredients = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, dishId);
+
+            if (ingredientName != null && !ingredientName.isEmpty()) {
+                ps.setString(paramIndex++, "%" + ingredientName + "%");
+            }
+            if (ingredientPriceAround != null) {
+                ps.setDouble(paramIndex++, ingredientPriceAround - 50);
+                ps.setDouble(paramIndex++, ingredientPriceAround + 50);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ingredients.add(new Ingredient(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getDouble("price"),
+                            CategoryEnum.valueOf(rs.getString("category")),
+                            rs.getObject("required_quantity", Double.class),
+                            null // On ne set pas le Dish ici
+                    ));
+                }
+            }
+        }
+
+        return ingredients;
+    }
 }
