@@ -20,7 +20,6 @@ public class DishRepository {
         this.dataSource = dataSource;
     }
 
-    // 🔹 Récupérer un plat par id
     public Dish findById(int id) throws SQLException {
         String sql = """
             SELECT d.id AS d_id, d.name AS d_name, d.dish_type,
@@ -35,7 +34,6 @@ public class DishRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-
             Dish dish = null;
             List<Ingredient> ingredients = new ArrayList<>();
 
@@ -48,7 +46,6 @@ public class DishRepository {
                                 DishTypeEnum.valueOf(rs.getString("dish_type"))
                         );
                     }
-
                     if (rs.getObject("i_id") != null) {
                         ingredients.add(new Ingredient(
                                 rs.getInt("i_id"),
@@ -70,7 +67,6 @@ public class DishRepository {
         }
     }
 
-    // 🔹 Récupérer tous les plats
     public List<Dish> findAll() throws SQLException {
         List<Dish> dishes = new ArrayList<>();
         String sql = "SELECT id FROM dish ORDER BY id";
@@ -81,39 +77,10 @@ public class DishRepository {
 
             while (rs.next()) {
                 int id = rs.getInt("id");
-                Dish dish = findById(id); // réutilise la méthode findById
+                Dish dish = findById(id);
                 if (dish != null) dishes.add(dish);
             }
         }
-
         return dishes;
-    }
-
-    // 🔹 Mettre à jour les ingrédients d’un plat
-    public void updateIngredients(int dishId, List<Ingredient> ingredients) throws SQLException {
-        try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
-
-            // Supprimer les associations existantes
-            try (PreparedStatement psDelete = conn.prepareStatement(
-                    "DELETE FROM dish_ingredient WHERE dish_id = ?")) {
-                psDelete.setInt(1, dishId);
-                psDelete.executeUpdate();
-            }
-
-            // Insérer les nouvelles associations
-            try (PreparedStatement psInsert = conn.prepareStatement(
-                    "INSERT INTO dish_ingredient(dish_id, ingredient_id) VALUES (?, ?)")) {
-                for (Ingredient i : ingredients) {
-                    psInsert.setInt(1, dishId);
-                    psInsert.setInt(2, i.getId());
-                    psInsert.executeUpdate();
-                }
-            }
-
-            conn.commit();
-        } catch (SQLException e) {
-            throw e;
-        }
     }
 }

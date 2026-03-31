@@ -1,3 +1,9 @@
 package org.example.ingredientsrp.entity;
 
-public enum UniteEnum { PCS, KG, L }
+public enum UniteEnum {
+    KG,
+    G,
+    L,
+    ML,
+    PCS
+}

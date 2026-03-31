@@ -1,18 +1,14 @@
 package org.example.ingredientsrp.dataSource;
 
-import org.springframework.stereotype.Component;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-@Component
+@Configuration
 public class DataSource {
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/mini_dish_db",
-                "mini_dish_db_manager",
-                "123456"
-        );
+
+    @Bean
+    public javax.sql.DataSource appDataSource(DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().build();
     }
 }
