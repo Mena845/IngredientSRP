@@ -83,4 +83,34 @@ public class DishRepository {
         }
         return dishes;
     }
+
+
+    public void updateIngredients(int dishId, List<Ingredient> ingredients) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Supprimer les associations existantes
+            try (PreparedStatement psDelete = conn.prepareStatement(
+                    "DELETE FROM dish_ingredient WHERE dish_id = ?")) {
+                psDelete.setInt(1, dishId);
+                psDelete.executeUpdate();
+            }
+
+            // Ajouter les nouvelles associations
+            try (PreparedStatement psInsert = conn.prepareStatement(
+                    "INSERT INTO dish_ingredient(dish_id, ingredient_id) VALUES (?, ?)")) {
+                for (Ingredient i : ingredients) {
+                    psInsert.setInt(1, dishId);
+                    psInsert.setInt(2, i.getId());
+                    psInsert.executeUpdate();
+                }
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+
 }
