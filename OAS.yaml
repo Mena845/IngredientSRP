@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Ingredients API
+  description: API de gestion des ingrédients
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /ingredients/{id}:
+    get:
+      summary: Récupérer un ingrédient par son identifiant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant de l'ingrédient
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ingrédient trouvé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifier:
+                    type: integer
+                  name:
+                    type: string
+                  category:
+                    type: string
+                  price:
+                    type: number
+                    format: float
+        '404':
+          description: Ingrédient non trouvé
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Ingredient.id={id} is not found"
+
+  /ingredients/{id}/stock:
+    get:
+      summary: Récupérer la valeur du stock d'un ingrédient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant de l'ingrédient
+          schema:
+            type: integer
+
+        - name: at
+          in: query
+          required: true
+          description: Moment temporel pour récupérer le stock
+          schema:
+            type: string
+            format: date-time
+
+        - name: unit
+          in: query
+          required: true
+          description: Unité du stock (PCS, KG, L)
+          schema:
+            type: string
+            enum: [PCS, KG, L]
+
+      responses:
+        '200':
+          description: Stock trouvé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unit:
+                    type: string
+                    enum: [PCS, KG, L]
+                  value:
+                    type: number
+
+        '400':
+          description: Paramètre manquant
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Either mandatory query parameter `at` or `unit` is not provided."
+
+        '404':
+          description: Ingrédient non trouvé
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Ingredient.id={id} is not found"
